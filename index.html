@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YouTube Short Downloader - MP4</title>
+    <style>
+        body { font-family: Arial, sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; background-color: #f0f0f0; margin: 0; }
+        .container { background-color: #ffffff; padding: 40px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); width: 100%; max-width: 500px; text-align: center; }
+        h1 { color: #cc0000; margin-bottom: 30px; }
+        input[type="text"] { width: calc(100% - 22px); padding: 10px; margin-bottom: 20px; border: 1px solid #ccc; border-radius: 5px; font-size: 16px; }
+        button { background-color: #cc0000; color: white; padding: 12px 20px; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; transition: background-color 0.3s; }
+        button:hover { background-color: #990000; }
+        #message { margin-top: 20px; font-weight: bold; }
+        #downloadLink { margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>YouTube Short Downloader</h1>
+        <p>Shorts URL se MP4 video download karein</p>
+        <input type="text" id="videoUrl" placeholder="YouTube Short URL yahan Paste karein...">
+        <button onclick="processDownload()">Download Karein</button>
+        <div id="message"></div>
+        <div id="downloadLink"></div>
+    </div>
+
+    <script>
+        function processDownload() {
+            const url = document.getElementById('videoUrl').value.trim();
+            const messageDiv = document.getElementById('message');
+            const downloadLinkDiv = document.getElementById('downloadLink');
+            
+            messageDiv.textContent = '';
+            downloadLinkDiv.innerHTML = '';
+
+            if (!url) {
+                messageDiv.textContent = 'Kripya URL daalein.';
+                return;
+            }
+
+            messageDiv.textContent = 'Processing... Kripya intezaar karein.';
+            
+            // Yahan par aapka BACKEND API call hoga.
+            // Mana ki aapka backend server 'https://your-backend-api.com/download' par chal raha hai
+            const backendUrl = 'https://your-backend-api.com/download'; 
+
+            fetch(backendUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ youtube_url: url })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success && data.download_url) {
+                    messageDiv.textContent = 'Download Link Ready!';
+                    downloadLinkDiv.innerHTML = `<a href="${data.download_url}" download>Video Download Karne Ke Liye Click Karein</a>`;
+                } else {
+                    messageDiv.textContent = 'Error: Video download nahi ho paya. Sahi URL check karein.';
+                }
+            })
+            .catch(error => {
+                console.error('Fetch error:', error);
+                messageDiv.textContent = 'Network Error ya Server Mein Koi Problem Aayi.';
+            });
+        }
+    </script>
+</body>
+</html>
