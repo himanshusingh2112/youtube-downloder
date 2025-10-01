@@ -1,4 +1,5 @@
 from flask import Flask, request, jsonify, send_file
+from flask_cors import CORS  # <--- (1) CORS library import kiya gaya
 import yt_dlp
 import os
 import uuid
@@ -6,6 +7,8 @@ import threading
 import time
 
 app = Flask(__name__)
+CORS(app)  # <--- (2) CORS ko sabhi routes par enable kiya gaya
+
 # Temporary directory jahan files store hongi
 DOWNLOAD_DIR = 'temp_downloads'
 if not os.path.exists(DOWNLOAD_DIR):
@@ -30,12 +33,10 @@ def clean_old_files():
 # Clean up thread start karein
 threading.Thread(target=clean_old_files, daemon=True).start()
 
-# --- Naya Root Route Add Kiya Gaya Hai ---
+# Root Route
 @app.route('/')
 def home():
-    # Jab user root URL khole ga, toh yeh message dikhega.
     return "YouTube Shorts Downloader API is Running! Use the /download endpoint to process links."
-# ----------------------------------------
 
 @app.route('/download', methods=['POST'])
 def handle_download():
@@ -45,13 +46,11 @@ def handle_download():
     if not url:
         return jsonify({"success": False, "message": "URL missing"}), 400
 
-    # Ek unique naam banao taaki files aapas mein na takraayein
     unique_id = str(uuid.uuid4())
     temp_filepath = os.path.join(DOWNLOAD_DIR, f"{unique_id}.mp4")
 
     # yt-dlp options for best MP4 short video
     ydl_opts = {
-        # Best quality video with audio in MP4 format
         'format': 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best',
         'outtmpl': temp_filepath,
         'noplaylist': True,
@@ -63,13 +62,10 @@ def handle_download():
     
     try:
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-            # Video information nikalna
+            # Video information nikalna aur download karna
             info_dict = ydl.extract_info(url, download=True)
             
-            # Agar download successful raha
             if os.path.exists(temp_filepath):
-                # Yahan hum client ko direct download link bhejte hain
-                # Jismein file ko server se serve kiya ja raha hai
                 download_link = request.host_url.rstrip('/') + f'/serve_file/{unique_id}'
                 
                 return jsonify({
@@ -90,7 +86,6 @@ def serve_file(unique_id):
     filepath = os.path.join(DOWNLOAD_DIR, f"{unique_id}.mp4")
     
     if os.path.exists(filepath):
-        # File ko user ko bhejte hain (as a download)
         return send_file(filepath, as_attachment=True, download_name=f"short_{unique_id}.mp4")
     else:
         return "File Not Found or link expired", 404
