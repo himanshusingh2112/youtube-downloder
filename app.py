@@ -14,7 +14,8 @@ if not os.path.exists(DOWNLOAD_DIR):
 # File cleaning thread
 def clean_old_files():
     while True:
-        time.sleep(3600)  # Har ghante (1 hour) mein check karein
+        # Har ghante (1 hour) mein check karein
+        time.sleep(3600) 
         now = time.time()
         for filename in os.listdir(DOWNLOAD_DIR):
             file_path = os.path.join(DOWNLOAD_DIR, filename)
@@ -29,6 +30,12 @@ def clean_old_files():
 # Clean up thread start karein
 threading.Thread(target=clean_old_files, daemon=True).start()
 
+# --- Naya Root Route Add Kiya Gaya Hai ---
+@app.route('/')
+def home():
+    # Jab user root URL khole ga, toh yeh message dikhega.
+    return "YouTube Shorts Downloader API is Running! Use the /download endpoint to process links."
+# ----------------------------------------
 
 @app.route('/download', methods=['POST'])
 def handle_download():
@@ -90,6 +97,4 @@ def serve_file(unique_id):
 
 # Agar aap is file ko seedhe chalaate hain
 if __name__ == '__main__':
-    # Production ke liye, '0.0.0.0' use karein. Testing ke liye, '127.0.0.1' theek hai.
-    # Frontend mein 'https://your-backend-api.com/download' ko apne server ke URL se badalna yaad rakhein.
     app.run(debug=True, host='0.0.0.0', port=5000)
