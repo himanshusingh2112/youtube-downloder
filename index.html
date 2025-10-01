@@ -41,29 +41,37 @@
 
             messageDiv.textContent = 'Processing... Kripya intezaar karein.';
             
-            // Yahan par aapka BACKEND API call hoga.
-            // Mana ki aapka backend server 'https://your-backend-api.com/download' par chal raha hai
-            const backendUrl = 'https://your-backend-api.com/download'; 
+            // ****** Yahan Aapka Naya Render Backend URL Use Ho Raha Hai ******
+            const backendUrl = 'https://youtube-downloder-pw54.onrender.com/download'; 
+            // ***************************************************************
 
             fetch(backendUrl, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    // CORS policy issues se bachne ke liye koi extra header ki zaroorat nahi.
                 },
                 body: JSON.stringify({ youtube_url: url })
             })
-            .then(response => response.json())
+            .then(response => {
+                // Check karein ki response JSON format mein hai ya nahi
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
             .then(data => {
                 if (data.success && data.download_url) {
                     messageDiv.textContent = 'Download Link Ready!';
                     downloadLinkDiv.innerHTML = `<a href="${data.download_url}" download>Video Download Karne Ke Liye Click Karein</a>`;
                 } else {
-                    messageDiv.textContent = 'Error: Video download nahi ho paya. Sahi URL check karein.';
+                    // Agar backend se error message aaya hai
+                    messageDiv.textContent = `Error: ${data.message || 'Video download nahi ho paya. Sahi URL check karein.'}`;
                 }
             })
             .catch(error => {
                 console.error('Fetch error:', error);
-                messageDiv.textContent = 'Network Error ya Server Mein Koi Problem Aayi.';
+                messageDiv.textContent = `Error: Network ya Server mein koi problem aayi. ${error.message}`;
             });
         }
     </script>
